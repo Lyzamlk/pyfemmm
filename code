@@ -1,0 +1,69 @@
+clear all
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%les variables %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+profondeur=30
+%metal
+longm=5
+hautm=3
+%bobine
+e=0.4
+longb1=3
+longb2=2
+hautb1=1.5
+hautb2=1
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% definir le domaine d'etude %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+addpath('C:\femm42\mfiles')
+openfemm;
+newdocument(0)
+mi_probdef(0,'millimeters','planar',1e-8,profondeur,30,'Newton')
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% mettre les materiaux et la condition limite %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+mi_getmaterial('18 AWG'); % cuivre
+mi_getmaterial('M-36 Steel'); % le fer
+mi_addboundprop('limite',0,0,0,0,0,0,0,0,0);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% tracer les point %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% les ponits du metal
+p0=[0,0];
+p1=[-longm,0];
+p2=[0,hautm];
+p3=[-longm,hautm];
+% tracer les point du metal
+p=[p0;p1;p2;p3];
+for i=1:length(p)
+mi_addnode(p(i,:));
+end
+%tracer les segment du metal
+mi_addsegment(p0,p1);
+mi_addsegment(p1,p3);
+mi_addsegment(p2,p3);
+mi_addsegment(p2,p0);
+%les points de la bobine
+p4=[0,hautm+e];
+p5=[0,hautm+e+hautb1];
+p6=[-(longb1-longb2)/2,hautm+e];
+p7=[-(longb1-longb2)/2,hautm+e+hautb2];
+p8=[-(longb1/2),hautm+e+hautb1];
+p9=[-(longb1/2),hautm+e+hautb2];
+% tracer les point de la bobine
+p=[p4;p5;p6;p7;p8;p9];
+for i=1:length(p)
+mi_addnode(p(i,:));
+end
+%tracer les segment de la bobine
+mi_addsegment(p4,p5);
+mi_addsegment(p5,p8);
+mi_addsegment(p6,p7);
+mi_addsegment(p7,p9);
+mi_addsegment(p4,p6);
+% selectionner les segment pour faire un mirroir
+mi_seteditmode('segments')
+mi_selectsegment((p4(1)+p5(1))/2,(p4(2)+p5(2))/2);
+mi_selectsegment((p5(1)+p8(1))/2,(p5(2)+p8(2))/2);
+mi_selectsegment((p6(1)+p7(1))/2,(p6(2)+p7(2))/2);
+mi_selectsegment((p7(1)+p9(1))/2,(p7(2)+p9(2))/2);
+mi_selectsegment((p4(1)+p6(1))/2,(p4(2)+p6(2))/2);
+
+mi_mirror(p8(1),p8(2),p9(1),p9(2));
+
